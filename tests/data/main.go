@@ -35,11 +35,25 @@ type Good struct {
 	SamplePtr *SampleString
 }
 
-type intf struct {
+type withIntf struct {
 	error
 	str string
 	aaa.Intf
 	*Good
 	intef aaa.Intf
-	aaa.StrSample
+	aaa.IntSample
+	intf
+	notEmbededIntf intf
+	fn             func(v any) error
+}
+
+type intf interface {
+	AAA(in string, good Good) (string, error)
+	BBB()
+	aaa.Intf
+	childIntf
+}
+
+type childIntf interface {
+	CCC()
 }

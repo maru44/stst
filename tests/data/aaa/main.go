@@ -4,4 +4,4 @@ type Intf interface {
 	Hello() string
 }
 
-type StrSample string
+type IntSample int

@@ -9,6 +9,12 @@ type (
 		Name   string
 		Fields []*Field
 		Type   *Type
+		Func   *Func
+	}
+
+	Func struct {
+		Args    []*Field
+		Results []*Field
 	}
 
 	Field struct {
@@ -22,11 +28,12 @@ type (
 	}
 
 	Type struct {
-		Underlying UnderlyingType // github.com/xxx/yy.ZZZ
-		Package    string         // github.com/xxx/yy
-		PkPlusName string         // yy.ZZZ
-		TypeName   string         // ZZZ
-		// Enum ? []T
+		Underlying        UnderlyingType // github.com/xxx/yy.ZZZ
+		Package           string         // github.com/xxx/yy
+		PkPlusName        string         // yy.ZZZ
+		TypeName          string         // ZZZ
+		IsInterface       bool
+		PossibleInterface bool
 	}
 
 	Tag struct {
