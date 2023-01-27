@@ -1,1 +1,3 @@
 # stst
+
+struct information
