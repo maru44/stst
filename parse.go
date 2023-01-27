@@ -18,9 +18,27 @@ func NewParser(pkg *packages.Package) *Parser {
 	}
 }
 
-func (p *Parser) ParseFile(file *ast.File) []*model.Schema {
+func (p *Parser) Parse() []*model.Schema {
 	var schemas []*model.Schema
-	for _, decl := range file.Decls {
+	for _, f := range p.Pkg.Syntax {
+		for _, decl := range f.Decls {
+			if it, ok := decl.(*ast.GenDecl); ok {
+				for _, spec := range it.Specs {
+					switch ts := spec.(type) {
+					case *ast.TypeSpec:
+						sc := p.parseTypeSpec(ts)
+						schemas = append(schemas, sc)
+					}
+				}
+			}
+		}
+	}
+	return schemas
+}
+
+func (p *Parser) ParseFile(f *ast.File) []*model.Schema {
+	var schemas []*model.Schema
+	for _, decl := range f.Decls {
 		if it, ok := decl.(*ast.GenDecl); ok {
 			for _, spec := range it.Specs {
 				switch ts := spec.(type) {
@@ -41,12 +59,15 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *model.Schema {
 
 	switch typ := spec.Type.(type) {
 	case *ast.StructType:
+		sc.Type = p.parseIdent(spec.Name)
+		sc.Type.SetPackage()
 		p.parseStruct(typ, sc)
 	case *ast.Ident:
-		// (like type AAA string)
-		sc.Type, _ = p.parseIdent(typ)
+		sc.Type = p.parseIdent(typ)
+		sc.Type.SetPackage()
 	case *ast.InterfaceType:
-		// pp.Println(typ)
+		sc.Type = p.parseIdent(spec.Name)
+		sc.Type.SetPackage()
 		sc.IsInterface = true
 		p.parseInterface(typ, sc)
 	}
@@ -94,7 +115,7 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 
 	switch typ := f.Type.(type) {
 	case *ast.Ident:
-		out.Type, out.Schema = p.parseIdent(typ)
+		out.Type = p.parseIdent(typ)
 
 		// set name for embeded struct
 		if len(f.Names) == 0 {
@@ -110,7 +131,7 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			out.IsPtr = true
 			switch x := elt.X.(type) {
 			case *ast.Ident:
-				out.Type, out.Schema = p.parseIdent(x)
+				out.Type = p.parseIdent(x)
 			case *ast.SelectorExpr:
 				out.Type = &model.Type{
 					TypeName:   x.Sel.Name,
@@ -118,13 +139,19 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 				}
 			}
 		case *ast.Ident:
-			out.Type, out.Schema = p.parseIdent(elt)
+			out.Type = p.parseIdent(elt)
+		case *ast.FuncType:
+			out.Func = p.parseFunc(elt)
 		}
 	case *ast.StarExpr:
 		out.IsPtr = true
 		switch x := typ.X.(type) {
 		case *ast.Ident:
-			out.Type, out.Schema = p.parseIdent(x)
+			// set name to embeded pointer
+			if name == "" {
+				name = x.Name
+			}
+			out.Type = p.parseIdent(x)
 		case *ast.SelectorExpr:
 			// imported pointer type (like *time.Time)
 			out.Type = &model.Type{
@@ -143,60 +170,47 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			TypeName:   typ.Sel.Name,
 			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 		}
-		out.PossibleInterface = true
 	case *ast.FuncType:
-		// pp.Println(name, typ)
-		out.Schema = &model.Schema{
-			Name: name,
-		}
-		var args, results []*model.Field
-		// pp.Println(typ.Params.List)
-		if typ.Params != nil {
-			for _, param := range typ.Params.List {
-				ff, ok := p.parseField(param)
-				if ok {
-					args = append(args, ff)
-				}
-			}
-		}
-		if typ.Results != nil {
-			for _, res := range typ.Results.List {
-				ff, ok := p.parseField(res)
-				if ok {
-					results = append(results, ff)
-				}
-			}
-		}
-		out.Schema.Func = &model.Func{
-			Args:    args,
-			Results: results,
-		}
+		out.Func = p.parseFunc(typ)
 	}
 
 	out.Name = name
 	if out.Type != nil {
 		out.Type.SetPackage()
-
-		// only if interface defined same package
-		if p.samePackage(out.Type.Package) {
-			out.Type.Underlying = model.UnderlyingType(out.Type.TypeName)
-			out.Type.SetPackage()
-			out.IsInterface = true
-		}
 	}
 	return out, true
 }
 
-// func (p *Parser) getSchemaByIdent(ide *ast.Ident) {
+func (p *Parser) parseFunc(fn *ast.FuncType) *model.Func {
+	var args, results []*model.Field
+	if fn.Params != nil {
+		for _, param := range fn.Params.List {
+			ff, ok := p.parseField(param)
+			if ok {
+				args = append(args, ff)
+			}
+		}
+	}
+	if fn.Results != nil {
+		for _, res := range fn.Results.List {
+			ff, ok := p.parseField(res)
+			if ok {
+				results = append(results, ff)
+			}
+		}
+	}
+	return &model.Func{
+		Args:    args,
+		Results: results,
+	}
+}
 
-// }
-
-func (p *Parser) parseIdent(ide *ast.Ident) (*model.Type, *model.Schema) {
+func (p *Parser) parseIdent(ide *ast.Ident) *model.Type {
 	if ide.Obj == nil {
 		return &model.Type{
 			TypeName:   ide.Name,
 			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
-		}, nil
+		}
 	}
 	if ide.Obj.Decl != nil {
 		if spec, ok := ide.Obj.Decl.(*ast.TypeSpec); ok {
@@ -206,20 +220,20 @@ func (p *Parser) parseIdent(ide *ast.Ident) (*model.Type, *model.Schema) {
 				return &model.Type{
 					TypeName:   ide.Name,
 					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
-				}, nil
+				}
 			case *ast.StructType:
-				sc := p.parseTypeSpec(spec)
+				// sc := p.parseTypeSpec(spec)
 				return &model.Type{
 					TypeName:   ide.Name,
 					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
-				}, sc
+				}
 			}
 		}
 	}
 	return &model.Type{
 		TypeName:   ide.Obj.Name,
 		Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
-	}, nil
+	}
 }
 
 func (p *Parser) parseTag(tag *ast.BasicLit) []*model.Tag {

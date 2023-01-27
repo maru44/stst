@@ -1,3 +1,3 @@
 # stst
 
-struct information
+`stst` is package to get type information by static analysis.

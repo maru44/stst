@@ -19,15 +19,16 @@ type (
 	}
 
 	Field struct {
-		Name              string
-		Type              *Type
-		IsSlice           bool
-		IsPtr             bool
-		Tags              []*Tag
-		Schema            *Schema
-		Comment           []string
-		IsInterface       bool
-		PossibleInterface bool
+		Name    string
+		Type    *Type
+		IsSlice bool
+		IsPtr   bool
+		Tags    []*Tag
+		Comment []string
+		Func    *Func
+		// Schema  *Schema
+		// PossibleInterface bool
+		// IsInterface       bool
 	}
 
 	Type struct {
@@ -66,4 +67,8 @@ func (t *Type) SetPackage() {
 
 func (s *Schema) IsFunc() bool {
 	return s.Func != nil
+}
+
+func (f *Field) IsFunc() bool {
+	return f.Func != nil
 }
