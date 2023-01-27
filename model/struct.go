@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 type (
 	UnderlyingType string
 
@@ -16,6 +18,7 @@ type (
 		IsPtr   bool
 		Tags    []*Tag
 		Schema  *Schema
+		Comment []string
 	}
 
 	Type struct {
@@ -32,3 +35,18 @@ type (
 		RawValue string
 	}
 )
+
+func (u UnderlyingType) pk() (pack string, pkPlusName string) {
+	arr := strings.Split(string(u), "/")
+	if len(arr) == 1 {
+		return
+	}
+	pkPlusName = arr[len(arr)-1]
+	withouType := strings.Split(pkPlusName, ".")
+	pack = strings.Join(arr[0:len(arr)-1], "/") + "/" + withouType[0]
+	return
+}
+
+func (t *Type) SetPackage() {
+	t.Package, t.PkPlusName = t.Underlying.pk()
+}
