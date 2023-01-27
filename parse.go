@@ -1,6 +1,4 @@
-package main
-
-// TODO fix main > stst
+package stst
 
 import (
 	"go/ast"
@@ -11,12 +9,12 @@ import (
 )
 
 type Parser struct {
-	pkg *packages.Package
+	Pkg *packages.Package
 }
 
 func NewParser(pkg *packages.Package) *Parser {
 	return &Parser{
-		pkg: pkg,
+		Pkg: pkg,
 	}
 }
 
@@ -83,6 +81,8 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 	switch typ := f.Type.(type) {
 	case *ast.Ident:
 		out.Type, out.Schema = p.parseIdent(typ)
+
+		// set name for embeded struct
 		if len(f.Names) == 0 {
 			name = typ.Name
 		}
@@ -100,7 +100,7 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			case *ast.SelectorExpr:
 				out.Type = &model.Type{
 					TypeName:   x.Sel.Name,
-					Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(typ).String()),
+					Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 				}
 			}
 		case *ast.Ident:
@@ -108,23 +108,26 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 		}
 	case *ast.StarExpr:
 		out.IsPtr = true
-		if x, ok := typ.X.(*ast.Ident); ok {
-			out.Type, out.Schema = p.parseIdent(x)
-		}
 		switch x := typ.X.(type) {
 		case *ast.Ident:
 			out.Type, out.Schema = p.parseIdent(x)
 		case *ast.SelectorExpr:
+			// imported pointer type (like *time.Time)
 			out.Type = &model.Type{
 				TypeName:   x.Sel.Name,
-				Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(typ).String()),
+				Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 			}
 		}
 	case *ast.SelectorExpr:
-		// interface or something like time.Time
+		// interface, something imported struct (like time.Time)
+
+		// set name for embeded interface
+		if name == "" {
+			name = typ.Sel.Name
+		}
 		out.Type = &model.Type{
 			TypeName:   typ.Sel.Name,
-			Underlying: model.UnderlyingType(strings.TrimLeft(p.pkg.TypesInfo.TypeOf(typ).String(), "*")),
+			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 		}
 	}
 	out.Name = name
@@ -138,7 +141,7 @@ func (p *Parser) parseIdent(ide *ast.Ident) (*model.Type, *model.Schema) {
 	if ide.Obj == nil {
 		return &model.Type{
 			TypeName:   ide.Name,
-			Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(ide).String()),
+			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 		}, nil
 	}
 	if ide.Obj.Decl != nil {
@@ -148,20 +151,20 @@ func (p *Parser) parseIdent(ide *ast.Ident) (*model.Type, *model.Schema) {
 				// enum like
 				return &model.Type{
 					TypeName:   ide.Name,
-					Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(typ).String()),
+					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 				}, nil
 			case *ast.StructType:
 				sc := p.parseTypeSpec(spec)
 				return &model.Type{
 					TypeName:   ide.Name,
-					Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(ide).String()),
+					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 				}, sc
 			}
 		}
 	}
 	return &model.Type{
 		TypeName:   ide.Obj.Name,
-		Underlying: model.UnderlyingType(p.pkg.TypesInfo.TypeOf(ide).String()),
+		Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 	}, nil
 }
 

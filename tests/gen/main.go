@@ -1,11 +1,10 @@
 package main
 
-// TODO delete this package
-
 import (
 	"fmt"
 
 	"github.com/k0kubun/pp"
+	"github.com/maru44/stst"
 	"github.com/maru44/stst/model"
 	"golang.org/x/tools/go/packages"
 )
@@ -16,8 +15,8 @@ func main() {
 	var schemas []*model.Schema
 
 	for _, pk := range ps {
-		p := NewParser(pk)
-		for _, f := range p.pkg.Syntax {
+		p := stst.NewParser(pk)
+		for _, f := range p.Pkg.Syntax {
 			structs := p.ParseFile(f)
 			schemas = append(schemas, structs...)
 		}

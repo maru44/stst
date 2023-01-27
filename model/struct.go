@@ -39,6 +39,11 @@ type (
 func (u UnderlyingType) pk() (pack string, pkPlusName string) {
 	arr := strings.Split(string(u), "/")
 	if len(arr) == 1 {
+		withoutType := strings.Split(string(u), ".")
+		if len(withoutType) != 1 {
+			pkPlusName = string(u)
+			pack = withoutType[0]
+		}
 		return
 	}
 	pkPlusName = arr[len(arr)-1]

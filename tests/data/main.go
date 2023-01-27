@@ -1,11 +1,11 @@
-package tests
+package data
 
-//go:generate go run github.com/maru44/stst
+//go:generate go run github.com/maru44/stst/tests/gen
 
 import (
 	"time"
 
-	"github.com/maru44/stst/tests/aaa"
+	"github.com/maru44/stst/tests/data/aaa"
 )
 
 type SampleString string
@@ -40,4 +40,6 @@ type intf struct {
 	str string
 	aaa.Intf
 	*Good
+	intef aaa.Intf
+	aaa.StrSample
 }
