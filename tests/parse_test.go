@@ -551,5 +551,5 @@ func TestParse(t *testing.T) {
 		},
 	}
 
-	assert.EqualValues(t, want, schemas)
+	assert.Equal(t, want, schemas)
 }
