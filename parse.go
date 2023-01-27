@@ -4,7 +4,6 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/k0kubun/pp"
 	"github.com/maru44/stst/model"
 	"golang.org/x/tools/go/packages"
 )
@@ -48,6 +47,7 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *model.Schema {
 		sc.Type, _ = p.parseIdent(typ)
 	case *ast.InterfaceType:
 		// pp.Println(typ)
+		sc.IsInterface = true
 		p.parseInterface(typ, sc)
 	}
 	return sc
@@ -140,10 +140,10 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			name = typ.Sel.Name
 		}
 		out.Type = &model.Type{
-			TypeName:          typ.Sel.Name,
-			Underlying:        model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
-			PossibleInterface: true,
+			TypeName:   typ.Sel.Name,
+			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 		}
+		out.PossibleInterface = true
 	case *ast.FuncType:
 		// pp.Println(name, typ)
 		out.Schema = &model.Schema{
@@ -153,27 +153,17 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 		// pp.Println(typ.Params.List)
 		if typ.Params != nil {
 			for _, param := range typ.Params.List {
-				switch paramType := param.Type.(type) {
-				case *ast.Ident:
-					ff, ok := p.parseField(param)
-					if ok {
-						args = append(args, ff)
-					}
-				default:
-					pp.Println(paramType)
+				ff, ok := p.parseField(param)
+				if ok {
+					args = append(args, ff)
 				}
 			}
 		}
 		if typ.Results != nil {
 			for _, res := range typ.Results.List {
-				switch resType := res.Type.(type) {
-				case *ast.Ident:
-					ff, ok := p.parseField(res)
-					if ok {
-						results = append(results, ff)
-					}
-				default:
-					pp.Println(resType)
+				ff, ok := p.parseField(res)
+				if ok {
+					results = append(results, ff)
 				}
 			}
 		}
@@ -191,7 +181,7 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 		if p.samePackage(out.Type.Package) {
 			out.Type.Underlying = model.UnderlyingType(out.Type.TypeName)
 			out.Type.SetPackage()
-			out.Type.IsInterface = true
+			out.IsInterface = true
 		}
 	}
 	return out, true

@@ -48,7 +48,7 @@ type withIntf struct {
 }
 
 type intf interface {
-	AAA(in string, good Good) (string, error)
+	AAA(in string, good Good, sample aaa.Sample) (string, error)
 	BBB()
 	aaa.Intf
 	childIntf

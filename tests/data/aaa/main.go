@@ -1,7 +1,13 @@
 package aaa
 
-type Intf interface {
-	Hello() string
-}
+type (
+	Intf interface {
+		Hello() string
+	}
 
-type IntSample int
+	IntSample int
+
+	Sample struct {
+		Str string
+	}
+)

@@ -6,10 +6,11 @@ type (
 	UnderlyingType string
 
 	Schema struct {
-		Name   string
-		Fields []*Field
-		Type   *Type
-		Func   *Func
+		Name        string
+		Fields      []*Field
+		Type        *Type
+		Func        *Func
+		IsInterface bool
 	}
 
 	Func struct {
@@ -18,22 +19,22 @@ type (
 	}
 
 	Field struct {
-		Name    string
-		Type    *Type
-		IsSlice bool
-		IsPtr   bool
-		Tags    []*Tag
-		Schema  *Schema
-		Comment []string
+		Name              string
+		Type              *Type
+		IsSlice           bool
+		IsPtr             bool
+		Tags              []*Tag
+		Schema            *Schema
+		Comment           []string
+		IsInterface       bool
+		PossibleInterface bool
 	}
 
 	Type struct {
-		Underlying        UnderlyingType // github.com/xxx/yy.ZZZ
-		Package           string         // github.com/xxx/yy
-		PkPlusName        string         // yy.ZZZ
-		TypeName          string         // ZZZ
-		IsInterface       bool
-		PossibleInterface bool
+		Underlying UnderlyingType // github.com/xxx/yy.ZZZ
+		Package    string         // github.com/xxx/yy
+		PkPlusName string         // yy.ZZZ
+		TypeName   string         // ZZZ
 	}
 
 	Tag struct {
@@ -61,4 +62,8 @@ func (u UnderlyingType) pk() (pack string, pkPlusName string) {
 
 func (t *Type) SetPackage() {
 	t.Package, t.PkPlusName = t.Underlying.pk()
+}
+
+func (s *Schema) IsFunc() bool {
+	return s.Func != nil
 }
