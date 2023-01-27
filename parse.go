@@ -158,6 +158,25 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 				TypeName:   x.Sel.Name,
 				Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 			}
+		case *ast.ArrayType:
+			out.IsSlicePtr = true
+			switch elt := x.Elt.(type) {
+			case *ast.StarExpr:
+				out.IsPtr = true
+				switch x := elt.X.(type) {
+				case *ast.Ident:
+					out.Type = p.parseIdent(x)
+				case *ast.SelectorExpr:
+					out.Type = &model.Type{
+						TypeName:   x.Sel.Name,
+						Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
+					}
+				}
+			case *ast.Ident:
+				out.Type = p.parseIdent(elt)
+			case *ast.FuncType:
+				out.Func = p.parseFunc(elt)
+			}
 		}
 	case *ast.SelectorExpr:
 		// interface, something imported struct (like time.Time)

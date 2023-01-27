@@ -25,7 +25,11 @@ type (
 		tim     time.Time
 		timPtr  *time.Time
 		strs    []string
-		funcs   []func(v any, ints []int) bool
+		funcs   []func(v any, ints []int, ptrInts *[]*int) bool
+	}
+
+	Gene[T any] struct {
+		One T
 	}
 
 	Good struct {

@@ -19,13 +19,14 @@ type (
 	}
 
 	Field struct {
-		Name    string
-		Type    *Type
-		IsSlice bool
-		IsPtr   bool
-		Tags    []*Tag
-		Comment []string
-		Func    *Func
+		Name       string
+		Type       *Type
+		IsSlice    bool
+		IsPtr      bool
+		IsSlicePtr bool
+		Tags       []*Tag
+		Comment    []string
+		Func       *Func
 		// Schema  *Schema
 		// PossibleInterface bool
 		// IsInterface       bool

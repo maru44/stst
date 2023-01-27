@@ -272,6 +272,15 @@ func TestParse(t *testing.T) {
 									TypeName:   "int",
 								},
 							},
+							{
+								Name: "ptrInts",
+								Type: &model.Type{
+									Underlying: "int",
+									TypeName:   "int",
+								},
+								IsPtr:      true,
+								IsSlicePtr: true,
+							},
 						},
 						Results: []*model.Field{
 							{
@@ -286,6 +295,24 @@ func TestParse(t *testing.T) {
 						},
 					},
 				},
+			},
+		},
+		{
+			Name: "Gene",
+			Fields: []*model.Field{
+				{
+					Name: "One",
+					Type: &model.Type{
+						Underlying: "T",
+						TypeName:   "T",
+					},
+				},
+			},
+			Type: &model.Type{
+				Underlying: "github.com/maru44/stst/tests/data.Gene[T any]",
+				Package:    "github.com/maru44/stst/tests/data",
+				PkPlusName: "data.Gene[T any]",
+				TypeName:   "Gene",
 			},
 		},
 		{
