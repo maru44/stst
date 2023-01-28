@@ -30,8 +30,8 @@ type (
 	}
 
 	Type struct {
-		Underlying UnderlyingType // github.com/xxx/yy.ZZZ
-		Package    string         // github.com/xxx/yy
+		Underlying UnderlyingType // xxx/yy.ZZZ
+		Package    string         // xxx/yy
 		PkPlusName string         // yy.ZZZ
 		TypeName   string         // ZZZ
 	}
@@ -43,7 +43,7 @@ type (
 	}
 )
 
-func (u UnderlyingType) Pk() (pack string, pkPlusName string) {
+func (u UnderlyingType) pk() (pack string, pkPlusName string) {
 	arr := strings.Split(string(u), "/")
 	if len(arr) == 1 {
 		withoutType := strings.Split(string(u), ".")
@@ -60,7 +60,7 @@ func (u UnderlyingType) Pk() (pack string, pkPlusName string) {
 }
 
 func (t *Type) SetPackage() {
-	t.Package, t.PkPlusName = t.Underlying.Pk()
+	t.Package, t.PkPlusName = t.Underlying.pk()
 }
 
 func (s *Schema) IsFunc() bool {
