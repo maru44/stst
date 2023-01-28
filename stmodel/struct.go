@@ -24,15 +24,16 @@ type (
 	}
 
 	Field struct {
-		Name             string
-		Type             *Type
-		IsUntitledStruct bool
-		Tags             []*Tag
-		Comment          []string
-		Func             *Func
-		Map              *Map
-		TypePrefixes     []TypePrefix
-		// Schema is only for untitled struct
+		Name                string
+		Type                *Type
+		IsUntitledStruct    bool
+		IsUntitledInterface bool
+		Tags                []*Tag
+		Comment             []string
+		Func                *Func
+		Map                 *Map
+		TypePrefixes        []TypePrefix
+		// Schema is only for untitled struct or untitled interface
 		Schema *Schema
 	}
 

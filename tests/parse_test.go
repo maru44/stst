@@ -72,10 +72,16 @@ func TestParse(t *testing.T) {
 			},
 			Map: &stmodel.Map{
 				Key: &stmodel.Field{
-					Name: "any",
-					Type: &stmodel.Type{
-						Underlying: "any",
-						TypeName:   "any",
+					Name:                "",
+					IsUntitledInterface: true,
+					Schema: &stmodel.Schema{
+						Name: "",
+						Fields: []*stmodel.Field{
+							{
+								Name: "AAA",
+								Func: &stmodel.Func{},
+							},
+						},
 					},
 				},
 				Value: &stmodel.Field{

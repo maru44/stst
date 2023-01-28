@@ -167,8 +167,8 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		out.IsUntitledStruct = true
 		if len(typ.Fields.List) > 0 {
 			sc := &stmodel.Schema{}
-			for _, f := range typ.Fields.List {
-				ff, ok := p.parseField(f)
+			for _, fi := range typ.Fields.List {
+				ff, ok := p.parseField(fi)
 				if !ok {
 					continue
 				}
@@ -177,6 +177,21 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 			}
 			out.Schema = sc
 		}
+	case *ast.InterfaceType:
+		out.IsUntitledInterface = true
+		if len(typ.Methods.List) > 0 {
+			sc := &stmodel.Schema{}
+			for _, m := range typ.Methods.List {
+				ff, ok := p.parseField(m)
+				if !ok {
+					continue
+				}
+				sc.Fields = append(sc.Fields, ff)
+			}
+			out.Schema = sc
+		}
+	default:
+		return nil, false
 	}
 
 	out.Name = name

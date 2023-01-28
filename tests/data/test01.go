@@ -8,7 +8,7 @@ type (
 	SampleString string
 
 	MapSimple map[any]struct{ a SampleString }
-	MapS      map[any]struct{}
+	MapS      map[interface{ AAA() }]struct{}
 
 	SamplePrefixMap map[string][]*[][]*[]any
 
