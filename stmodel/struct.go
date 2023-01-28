@@ -1,4 +1,4 @@
-package model
+package stmodel
 
 import "strings"
 
@@ -27,9 +27,6 @@ type (
 		Tags       []*Tag
 		Comment    []string
 		Func       *Func
-		// Schema  *Schema
-		// PossibleInterface bool
-		// IsInterface       bool
 	}
 
 	Type struct {
@@ -46,7 +43,7 @@ type (
 	}
 )
 
-func (u UnderlyingType) pk() (pack string, pkPlusName string) {
+func (u UnderlyingType) Pk() (pack string, pkPlusName string) {
 	arr := strings.Split(string(u), "/")
 	if len(arr) == 1 {
 		withoutType := strings.Split(string(u), ".")
@@ -63,7 +60,7 @@ func (u UnderlyingType) pk() (pack string, pkPlusName string) {
 }
 
 func (t *Type) SetPackage() {
-	t.Package, t.PkPlusName = t.Underlying.pk()
+	t.Package, t.PkPlusName = t.Underlying.Pk()
 }
 
 func (s *Schema) IsFunc() bool {

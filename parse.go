@@ -4,7 +4,7 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/maru44/stst/model"
+	"github.com/maru44/stst/stmodel"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -13,13 +13,14 @@ type Parser struct {
 }
 
 func NewParser(pkg *packages.Package) *Parser {
-	return &Parser{
+	out := &Parser{
 		Pkg: pkg,
 	}
+	return out
 }
 
-func (p *Parser) Parse() []*model.Schema {
-	var schemas []*model.Schema
+func (p *Parser) Parse() []*stmodel.Schema {
+	var schemas []*stmodel.Schema
 	for _, f := range p.Pkg.Syntax {
 		for _, decl := range f.Decls {
 			if it, ok := decl.(*ast.GenDecl); ok {
@@ -36,8 +37,8 @@ func (p *Parser) Parse() []*model.Schema {
 	return schemas
 }
 
-func (p *Parser) ParseFile(f *ast.File) []*model.Schema {
-	var schemas []*model.Schema
+func (p *Parser) ParseFile(f *ast.File) []*stmodel.Schema {
+	var schemas []*stmodel.Schema
 	for _, decl := range f.Decls {
 		if it, ok := decl.(*ast.GenDecl); ok {
 			for _, spec := range it.Specs {
@@ -52,8 +53,8 @@ func (p *Parser) ParseFile(f *ast.File) []*model.Schema {
 	return schemas
 }
 
-func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *model.Schema {
-	sc := &model.Schema{
+func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
+	sc := &stmodel.Schema{
 		Name: spec.Name.Name,
 	}
 
@@ -74,7 +75,7 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *model.Schema {
 	return sc
 }
 
-func (p *Parser) parseStruct(st *ast.StructType, sc *model.Schema) {
+func (p *Parser) parseStruct(st *ast.StructType, sc *stmodel.Schema) {
 	for _, f := range st.Fields.List {
 		ff, ok := p.parseField(f)
 		if !ok {
@@ -85,7 +86,7 @@ func (p *Parser) parseStruct(st *ast.StructType, sc *model.Schema) {
 	}
 }
 
-func (p *Parser) parseInterface(in *ast.InterfaceType, sc *model.Schema) {
+func (p *Parser) parseInterface(in *ast.InterfaceType, sc *stmodel.Schema) {
 	for _, m := range in.Methods.List {
 		ff, ok := p.parseField(m)
 		if !ok {
@@ -95,13 +96,13 @@ func (p *Parser) parseInterface(in *ast.InterfaceType, sc *model.Schema) {
 	}
 }
 
-func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
+func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 	var name string
 	if len(f.Names) != 0 {
 		name = f.Names[0].Name
 	}
 
-	out := &model.Field{
+	out := &stmodel.Field{
 		Tags: p.parseTag(f.Tag),
 	}
 
@@ -133,9 +134,9 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			case *ast.Ident:
 				out.Type = p.parseIdent(x)
 			case *ast.SelectorExpr:
-				out.Type = &model.Type{
+				out.Type = &stmodel.Type{
 					TypeName:   x.Sel.Name,
-					Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
+					Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 				}
 			}
 		case *ast.Ident:
@@ -154,9 +155,9 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 			out.Type = p.parseIdent(x)
 		case *ast.SelectorExpr:
 			// imported pointer type (like *time.Time)
-			out.Type = &model.Type{
+			out.Type = &stmodel.Type{
 				TypeName:   x.Sel.Name,
-				Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
+				Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 			}
 		case *ast.ArrayType:
 			out.IsSlicePtr = true
@@ -167,9 +168,9 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 				case *ast.Ident:
 					out.Type = p.parseIdent(x)
 				case *ast.SelectorExpr:
-					out.Type = &model.Type{
+					out.Type = &stmodel.Type{
 						TypeName:   x.Sel.Name,
-						Underlying: model.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
+						Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
 					}
 				}
 			case *ast.Ident:
@@ -185,9 +186,9 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 		if name == "" {
 			name = typ.Sel.Name
 		}
-		out.Type = &model.Type{
+		out.Type = &stmodel.Type{
 			TypeName:   typ.Sel.Name,
-			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
+			Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 		}
 	case *ast.FuncType:
 		out.Func = p.parseFunc(typ)
@@ -200,8 +201,8 @@ func (p *Parser) parseField(f *ast.Field) (*model.Field, bool) {
 	return out, true
 }
 
-func (p *Parser) parseFunc(fn *ast.FuncType) *model.Func {
-	var args, results []*model.Field
+func (p *Parser) parseFunc(fn *ast.FuncType) *stmodel.Func {
+	var args, results []*stmodel.Field
 	if fn.Params != nil {
 		for _, param := range fn.Params.List {
 			ff, ok := p.parseField(param)
@@ -218,17 +219,17 @@ func (p *Parser) parseFunc(fn *ast.FuncType) *model.Func {
 			}
 		}
 	}
-	return &model.Func{
+	return &stmodel.Func{
 		Args:    args,
 		Results: results,
 	}
 }
 
-func (p *Parser) parseIdent(ide *ast.Ident) *model.Type {
+func (p *Parser) parseIdent(ide *ast.Ident) *stmodel.Type {
 	if ide.Obj == nil {
-		return &model.Type{
+		return &stmodel.Type{
 			TypeName:   ide.Name,
-			Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+			Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 		}
 	}
 	if ide.Obj.Decl != nil {
@@ -236,31 +237,31 @@ func (p *Parser) parseIdent(ide *ast.Ident) *model.Type {
 			switch typ := spec.Type.(type) {
 			case *ast.Ident:
 				// enum like
-				return &model.Type{
+				return &stmodel.Type{
 					TypeName:   ide.Name,
-					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
+					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 				}
 			case *ast.StructType:
 				// sc := p.parseTypeSpec(spec)
-				return &model.Type{
+				return &stmodel.Type{
 					TypeName:   ide.Name,
-					Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 				}
 			}
 		}
 	}
-	return &model.Type{
+	return &stmodel.Type{
 		TypeName:   ide.Obj.Name,
-		Underlying: model.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+		Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 	}
 }
 
-func (p *Parser) parseTag(tag *ast.BasicLit) []*model.Tag {
+func (p *Parser) parseTag(tag *ast.BasicLit) []*stmodel.Tag {
 	if tag == nil {
 		return nil
 	}
 
-	var out []*model.Tag
+	var out []*stmodel.Tag
 	tags := strings.Split(strings.Trim(tag.Value, "`"), " ")
 	for _, t := range tags {
 		kv := strings.Split(t, ":")
@@ -269,7 +270,7 @@ func (p *Parser) parseTag(tag *ast.BasicLit) []*model.Tag {
 		}
 
 		v := strings.Trim(kv[1], `"`)
-		tag := &model.Tag{
+		tag := &stmodel.Tag{
 			Key:      kv[0],
 			Values:   strings.Split(v, ","),
 			RawValue: v,
@@ -279,6 +280,6 @@ func (p *Parser) parseTag(tag *ast.BasicLit) []*model.Tag {
 	return out
 }
 
-func (p *Parser) samePackage(pkgID string) bool {
-	return p.Pkg.ID == pkgID
-}
+// func (p *Parser) samePackage(pkgID string) bool {
+// 	return p.Pkg.ID == pkgID
+// }
