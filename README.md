@@ -83,7 +83,6 @@ result:
       Underlying: "int",
       TypeName:   "int",
     },
-    IsInterface:  false,
   },
   &stmodel.Schema{
     Name:   "Sample",
