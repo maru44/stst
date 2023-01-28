@@ -8,6 +8,8 @@ type (
 	IntSample int
 
 	Sample struct {
-		Str string
+		Str string `tag0:"xxx" tag1:"yyy,zzz"` // comment
 	}
+
+	prefixes []*[][][]*struct{}
 )
