@@ -62,7 +62,15 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
 	case *ast.StructType:
 		sc.Type = p.parseIdent(spec.Name)
 		sc.Type.SetPackage()
-		p.parseStruct(typ, sc)
+
+		for _, f := range typ.Fields.List {
+			ff, ok := p.parseField(f)
+			if !ok {
+				continue
+			}
+
+			sc.Fields = append(sc.Fields, ff)
+		}
 	case *ast.Ident:
 		sc.Type = p.parseIdent(typ)
 		sc.Type.SetPackage()
@@ -70,30 +78,16 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
 		sc.Type = p.parseIdent(spec.Name)
 		sc.Type.SetPackage()
 		sc.IsInterface = true
-		p.parseInterface(typ, sc)
+
+		for _, m := range typ.Methods.List {
+			ff, ok := p.parseField(m)
+			if !ok {
+				continue
+			}
+			sc.Fields = append(sc.Fields, ff)
+		}
 	}
 	return sc
-}
-
-func (p *Parser) parseStruct(st *ast.StructType, sc *stmodel.Schema) {
-	for _, f := range st.Fields.List {
-		ff, ok := p.parseField(f)
-		if !ok {
-			continue
-		}
-
-		sc.Fields = append(sc.Fields, ff)
-	}
-}
-
-func (p *Parser) parseInterface(in *ast.InterfaceType, sc *stmodel.Schema) {
-	for _, m := range in.Methods.List {
-		ff, ok := p.parseField(m)
-		if !ok {
-			continue
-		}
-		sc.Fields = append(sc.Fields, ff)
-	}
 }
 
 func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
@@ -148,7 +142,7 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		out.IsPtr = true
 		switch x := typ.X.(type) {
 		case *ast.Ident:
-			// set name to embeded pointer
+			// set name for embeded pointer
 			if name == "" {
 				name = x.Name
 			}
@@ -236,13 +230,12 @@ func (p *Parser) parseIdent(ide *ast.Ident) *stmodel.Type {
 		if spec, ok := ide.Obj.Decl.(*ast.TypeSpec); ok {
 			switch typ := spec.Type.(type) {
 			case *ast.Ident:
-				// enum like
+				// like stringLike type
 				return &stmodel.Type{
 					TypeName:   ide.Name,
 					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 				}
 			case *ast.StructType:
-				// sc := p.parseTypeSpec(spec)
 				return &stmodel.Type{
 					TypeName:   ide.Name,
 					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),

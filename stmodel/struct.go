@@ -19,10 +19,11 @@ type (
 	}
 
 	Field struct {
-		Name       string
-		Type       *Type
-		IsSlice    bool
-		IsPtr      bool
+		Name    string
+		Type    *Type
+		IsSlice bool
+		IsPtr   bool
+		// like *[]XXX
 		IsSlicePtr bool
 		Tags       []*Tag
 		Comment    []string
