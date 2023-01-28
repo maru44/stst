@@ -4,37 +4,50 @@ import "strings"
 
 type (
 	UnderlyingType string
+	TypePrefix     string
 
+	// Schema is information for defined as type
 	Schema struct {
-		Name        string
-		Fields      []*Field
-		Type        *Type
-		Func        *Func
-		IsInterface bool
+		Name         string
+		Fields       []*Field
+		Type         *Type
+		Func         *Func
+		Map          *Map
+		IsInterface  bool
+		TypePrefixes []TypePrefix
 	}
 
+	// Func has information of args and results
 	Func struct {
 		Args    []*Field
 		Results []*Field
 	}
 
 	Field struct {
-		Name    string
-		Type    *Type
-		IsSlice bool
-		IsPtr   bool
-		// like *[]XXX
-		IsSlicePtr bool
-		Tags       []*Tag
-		Comment    []string
-		Func       *Func
+		Name             string
+		Type             *Type
+		IsUntitledStruct bool
+		Tags             []*Tag
+		Comment          []string
+		Func             *Func
+		Map              *Map
+		TypePrefixes     []TypePrefix
+		// Schema is only for untitled struct
+		Schema *Schema
 	}
 
+	// Type is type information.
 	Type struct {
 		Underlying UnderlyingType // xxx/yy.ZZZ
-		Package    string         // xxx/yy
-		PkPlusName string         // yy.ZZZ
-		TypeName   string         // ZZZ
+		// Package is package id.
+		Package    string // xxx/yy
+		PkPlusName string // yy.ZZZ
+		TypeName   string // ZZZ
+	}
+
+	Map struct {
+		Key   *Field
+		Value *Field
 	}
 
 	Tag struct {
@@ -42,6 +55,11 @@ type (
 		Values   []string
 		RawValue string
 	}
+)
+
+const (
+	TypePrefixPtr   = TypePrefix("*")
+	TypePrefixSlice = TypePrefix("[]")
 )
 
 func (u UnderlyingType) pk() (pack string, pkPlusName string) {
@@ -70,4 +88,12 @@ func (s *Schema) IsFunc() bool {
 
 func (f *Field) IsFunc() bool {
 	return f.Func != nil
+}
+
+func (s *Schema) IsMap() bool {
+	return s.Map != nil
+}
+
+func (f *Field) IsMap() bool {
+	return f.Map != nil
 }

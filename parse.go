@@ -58,7 +58,20 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
 		Name: spec.Name.Name,
 	}
 
-	switch typ := spec.Type.(type) {
+	var fin bool
+	var prefixes []stmodel.TypePrefix
+	ex := spec.Type
+	for !fin {
+		var pref stmodel.TypePrefix
+		ex, pref, fin = p.purgePointerOrSlice(ex)
+		if fin {
+			break
+		}
+		prefixes = append(prefixes, pref)
+	}
+	sc.TypePrefixes = prefixes
+
+	switch typ := ex.(type) {
 	case *ast.StructType:
 		sc.Type = p.parseIdent(spec.Name)
 		sc.Type.SetPackage()
@@ -86,6 +99,10 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
 			}
 			sc.Fields = append(sc.Fields, ff)
 		}
+	case *ast.MapType:
+		sc.Type = p.parseIdent(spec.Name)
+		sc.Type.SetPackage()
+		sc.Map = p.parseMap(typ)
 	}
 	return sc
 }
@@ -108,7 +125,19 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		out.Comment = coms
 	}
 
-	switch typ := f.Type.(type) {
+	var fin bool
+	var prefixes []stmodel.TypePrefix
+	ex := f.Type
+	for !fin {
+		var pref stmodel.TypePrefix
+		ex, pref, fin = p.purgePointerOrSlice(ex)
+		if fin {
+			break
+		}
+		prefixes = append(prefixes, pref)
+	}
+
+	switch typ := ex.(type) {
 	case *ast.Ident:
 		out.Type = p.parseIdent(typ)
 
@@ -118,60 +147,6 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		}
 		if name == "" {
 			return nil, false
-		}
-	case *ast.ArrayType:
-		out.IsSlice = true
-		switch elt := typ.Elt.(type) {
-		case *ast.StarExpr:
-			out.IsPtr = true
-			switch x := elt.X.(type) {
-			case *ast.Ident:
-				out.Type = p.parseIdent(x)
-			case *ast.SelectorExpr:
-				out.Type = &stmodel.Type{
-					TypeName:   x.Sel.Name,
-					Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
-				}
-			}
-		case *ast.Ident:
-			out.Type = p.parseIdent(elt)
-		case *ast.FuncType:
-			out.Func = p.parseFunc(elt)
-		}
-	case *ast.StarExpr:
-		out.IsPtr = true
-		switch x := typ.X.(type) {
-		case *ast.Ident:
-			// set name for embeded pointer
-			if name == "" {
-				name = x.Name
-			}
-			out.Type = p.parseIdent(x)
-		case *ast.SelectorExpr:
-			// imported pointer type (like *time.Time)
-			out.Type = &stmodel.Type{
-				TypeName:   x.Sel.Name,
-				Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
-			}
-		case *ast.ArrayType:
-			out.IsSlicePtr = true
-			switch elt := x.Elt.(type) {
-			case *ast.StarExpr:
-				out.IsPtr = true
-				switch x := elt.X.(type) {
-				case *ast.Ident:
-					out.Type = p.parseIdent(x)
-				case *ast.SelectorExpr:
-					out.Type = &stmodel.Type{
-						TypeName:   x.Sel.Name,
-						Underlying: stmodel.UnderlyingType(strings.TrimLeft(p.Pkg.TypesInfo.TypeOf(typ).String(), "*")),
-					}
-				}
-			case *ast.Ident:
-				out.Type = p.parseIdent(elt)
-			case *ast.FuncType:
-				out.Func = p.parseFunc(elt)
-			}
 		}
 	case *ast.SelectorExpr:
 		// interface, something imported struct (like time.Time)
@@ -186,13 +161,59 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		}
 	case *ast.FuncType:
 		out.Func = p.parseFunc(typ)
+	case *ast.MapType:
+		out.Map = p.parseMap(typ)
+	case *ast.StructType:
+		out.IsUntitledStruct = true
+		if len(typ.Fields.List) > 0 {
+			sc := &stmodel.Schema{}
+			for _, f := range typ.Fields.List {
+				ff, ok := p.parseField(f)
+				if !ok {
+					continue
+				}
+
+				sc.Fields = append(sc.Fields, ff)
+			}
+			out.Schema = sc
+		}
 	}
 
 	out.Name = name
 	if out.Type != nil {
 		out.Type.SetPackage()
 	}
+	out.TypePrefixes = prefixes
 	return out, true
+}
+
+func (p *Parser) purgePointerOrSlice(ex ast.Expr) (ast.Expr, stmodel.TypePrefix, bool) {
+	switch typ := ex.(type) {
+	case *ast.StarExpr:
+		return typ.X, stmodel.TypePrefixPtr, false
+	case *ast.ArrayType:
+		return typ.Elt, stmodel.TypePrefixSlice, false
+	}
+	return ex, "", true
+}
+
+func (p *Parser) parseMap(m *ast.MapType) *stmodel.Map {
+	key, ok := p.parseField(&ast.Field{
+		Type: m.Key,
+	})
+	if !ok {
+		return nil
+	}
+	value, ok := p.parseField(&ast.Field{
+		Type: m.Value,
+	})
+	if !ok {
+		return nil
+	}
+	return &stmodel.Map{
+		Key:   key,
+		Value: value,
+	}
 }
 
 func (p *Parser) parseFunc(fn *ast.FuncType) *stmodel.Func {

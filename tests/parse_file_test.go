@@ -62,7 +62,7 @@ func TestParseFile(t *testing.T) {
 						PkPlusName: "data.Good",
 						TypeName:   "Good",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 				},
 				{
 					Name: "intef",
@@ -119,6 +119,25 @@ func TestParseFile(t *testing.T) {
 									Underlying: "error",
 									TypeName:   "error",
 								},
+							},
+						},
+					},
+				},
+				{
+					Name: "ma",
+					Map: &stmodel.Map{
+						Key: &stmodel.Field{
+							Name: "string",
+							Type: &stmodel.Type{
+								Underlying: "string",
+								TypeName:   "string",
+							},
+						},
+						Value: &stmodel.Field{
+							Name: "any",
+							Type: &stmodel.Type{
+								Underlying: "any",
+								TypeName:   "any",
 							},
 						},
 					},

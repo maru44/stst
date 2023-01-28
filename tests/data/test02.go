@@ -13,6 +13,7 @@ type (
 		intf
 		notEmbededIntf intf
 		fn             func(v any) error
+		ma             map[string]any
 	}
 
 	intf interface {

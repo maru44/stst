@@ -30,6 +30,89 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			Name: "MapSimple",
+			Type: &stmodel.Type{
+				Underlying: "github.com/maru44/stst/tests/data.MapSimple",
+				Package:    "github.com/maru44/stst/tests/data",
+				PkPlusName: "data.MapSimple",
+				TypeName:   "MapSimple",
+			},
+			Map: &stmodel.Map{
+				Key: &stmodel.Field{
+					Name: "any",
+					Type: &stmodel.Type{
+						Underlying: "any",
+						TypeName:   "any",
+					},
+				},
+				Value: &stmodel.Field{
+					Name:             "",
+					IsUntitledStruct: true,
+					Schema: &stmodel.Schema{
+						Fields: []*stmodel.Field{
+							{
+								Name: "a",
+								Type: &stmodel.Type{
+									Underlying: "string",
+									TypeName:   "SampleString",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Name: "MapS",
+			Type: &stmodel.Type{
+				Underlying: "github.com/maru44/stst/tests/data.MapS",
+				Package:    "github.com/maru44/stst/tests/data",
+				PkPlusName: "data.MapS",
+				TypeName:   "MapS",
+			},
+			Map: &stmodel.Map{
+				Key: &stmodel.Field{
+					Name: "any",
+					Type: &stmodel.Type{
+						Underlying: "any",
+						TypeName:   "any",
+					},
+				},
+				Value: &stmodel.Field{
+					Name:             "",
+					IsUntitledStruct: true,
+				},
+			},
+		},
+		{
+			Name: "SamplePrefixMap",
+			Type: &stmodel.Type{
+				Underlying: "github.com/maru44/stst/tests/data.SamplePrefixMap",
+				Package:    "github.com/maru44/stst/tests/data",
+				PkPlusName: "data.SamplePrefixMap",
+				TypeName:   "SamplePrefixMap",
+			},
+			Map: &stmodel.Map{
+				Key: &stmodel.Field{
+					Name: "string",
+					Type: &stmodel.Type{
+						Underlying: "string",
+						TypeName:   "string",
+					},
+				},
+				Value: &stmodel.Field{
+					Name: "any",
+					Type: &stmodel.Type{
+						TypeName:   "any",
+						Underlying: "any",
+					},
+					TypePrefixes: []stmodel.TypePrefix{
+						"[]", "*", "[]", "[]", "*", "[]",
+					},
+				},
+			},
+		},
+		{
 			Name: "Person",
 			Type: &stmodel.Type{
 				Underlying: "github.com/maru44/stst/tests/data.Person",
@@ -169,8 +252,7 @@ func TestParse(t *testing.T) {
 						PkPlusName: "data.Good",
 						TypeName:   "Good",
 					},
-					IsSlice: true,
-					IsPtr:   true,
+					TypePrefixes: []stmodel.TypePrefix{"[]", "*"},
 				},
 				{
 					Name: "GoodPtr",
@@ -180,7 +262,7 @@ func TestParse(t *testing.T) {
 						PkPlusName: "data.Good",
 						TypeName:   "Good",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 					Tags: []*stmodel.Tag{
 						{
 							Key: "bigquery",
@@ -223,7 +305,7 @@ func TestParse(t *testing.T) {
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 				},
 				{
 					Name: "tim",
@@ -242,7 +324,7 @@ func TestParse(t *testing.T) {
 						PkPlusName: "time.Time",
 						TypeName:   "Time",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 				},
 				{
 					Name: "strs",
@@ -250,11 +332,11 @@ func TestParse(t *testing.T) {
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					IsSlice: true,
+					TypePrefixes: []stmodel.TypePrefix{"[]"},
 				},
 				{
-					Name:    "funcs",
-					IsSlice: true,
+					Name:         "funcs",
+					TypePrefixes: []stmodel.TypePrefix{"[]"},
 					Func: &stmodel.Func{
 						Args: []*stmodel.Field{
 							{
@@ -265,8 +347,8 @@ func TestParse(t *testing.T) {
 								},
 							},
 							{
-								Name:    "ints",
-								IsSlice: true,
+								Name:         "ints",
+								TypePrefixes: []stmodel.TypePrefix{"[]"},
 								Type: &stmodel.Type{
 									Underlying: "int",
 									TypeName:   "int",
@@ -278,8 +360,7 @@ func TestParse(t *testing.T) {
 									Underlying: "int",
 									TypeName:   "int",
 								},
-								IsPtr:      true,
-								IsSlicePtr: true,
+								TypePrefixes: []stmodel.TypePrefix{"*", "[]", "*"},
 							},
 						},
 						Results: []*stmodel.Field{
@@ -344,7 +425,7 @@ func TestParse(t *testing.T) {
 						Underlying: "string",
 						TypeName:   "SampleString",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 				},
 			},
 		},
@@ -388,7 +469,7 @@ func TestParse(t *testing.T) {
 						PkPlusName: "data.Good",
 						TypeName:   "Good",
 					},
-					IsPtr: true,
+					TypePrefixes: []stmodel.TypePrefix{"*"},
 				},
 				{
 					Name: "intef",
@@ -445,6 +526,25 @@ func TestParse(t *testing.T) {
 									Underlying: "error",
 									TypeName:   "error",
 								},
+							},
+						},
+					},
+				},
+				{
+					Name: "ma",
+					Map: &stmodel.Map{
+						Key: &stmodel.Field{
+							Name: "string",
+							Type: &stmodel.Type{
+								Underlying: "string",
+								TypeName:   "string",
+							},
+						},
+						Value: &stmodel.Field{
+							Name: "any",
+							Type: &stmodel.Type{
+								Underlying: "any",
+								TypeName:   "any",
 							},
 						},
 					},

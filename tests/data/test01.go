@@ -7,6 +7,11 @@ import (
 type (
 	SampleString string
 
+	MapSimple map[any]struct{ a SampleString }
+	MapS      map[any]struct{}
+
+	SamplePrefixMap map[string][]*[][]*[]any
+
 	Person struct {
 		Name  string `bigquery:"name"` // comment
 		Age   int    `bigquery:"age"`
