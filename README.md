@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/maru44/stst/blob/master/LICENSE)
 ![ActionsCI](https://github.com/maru44/stst/workflows/lint-test/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/maru44/stst)](https://goreportcard.com/report/github.com/maru44/stst)
 
 The `stst` is package to get information defined as type in go package by static analysis.
 
