@@ -7,6 +7,16 @@ The `stst` is package to get information defined as type in go package by static
 
 ## How to Use
 
+**Install**
+
+```shell
+go install github.com/maru44/stst@latest
+```
+
+1. Load package
+2. Create `stst.Parser` by `stst.NewParser` with loaded package
+3. Execute `Parse` or `ParseFile` method of created `stst.Parser`
+
 sample code:
 
 ```go
