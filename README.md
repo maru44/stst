@@ -57,7 +57,7 @@ func loadPackages(ps ...string) ([]*packages.Package, error) {
 result:
 
 ```go
-[]*stst.Schema{
+schemas = []*stst.Schema{
   &stst.Schema{
     Name:   "Intf",
     Fields: []*stst.Field{
