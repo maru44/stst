@@ -148,7 +148,7 @@ func (p *Parser) parseField(f *ast.Field) (*Field, bool) {
 	case *ast.Ident:
 		out.Type = p.parseIdent(typ)
 
-		// set name for embeded struct
+		// set name for embedded struct
 		if len(f.Names) == 0 {
 			name = typ.Name
 		}
@@ -158,7 +158,7 @@ func (p *Parser) parseField(f *ast.Field) (*Field, bool) {
 	case *ast.SelectorExpr:
 		// interface, something imported struct (like time.Time)
 
-		// set name for embeded interface
+		// set name for embedded interface
 		if name == "" {
 			name = typ.Sel.Name
 		}

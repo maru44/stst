@@ -91,7 +91,7 @@ func TestParseFile(t *testing.T) {
 					},
 				},
 				{
-					Name: "notEmbededIntf",
+					Name: "notEmbeddedIntf",
 					Type: &stst.Type{
 						Underlying:  "github.com/maru44/stst/tests/data.intf",
 						PkgID:       "github.com/maru44/stst/tests/data",

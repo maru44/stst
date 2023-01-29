@@ -11,9 +11,9 @@ type (
 		intef aaa.Intf
 		aaa.IntSample
 		intf
-		notEmbededIntf intf
-		fn             func(v any) error
-		ma             map[string]any
+		notEmbeddedIntf intf
+		fn              func(v any) error
+		ma              map[string]any
 	}
 
 	intf interface {
