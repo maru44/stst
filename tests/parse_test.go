@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/maru44/stst"
-	"github.com/maru44/stst/stmodel"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -14,45 +13,45 @@ func TestParse(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, ps, 1)
 
-	var schemas []*stmodel.Schema
+	var schemas []*stst.Schema
 	for _, pk := range ps {
 		p := stst.NewParser(pk)
 		s := p.Parse()
 		schemas = append(schemas, s...)
 	}
 
-	want := []*stmodel.Schema{
+	want := []*stst.Schema{
 		{
 			Name: "SampleString",
-			Type: &stmodel.Type{
+			Type: &stst.Type{
 				Underlying: "string",
 				TypeName:   "string",
 			},
 		},
 		{
 			Name: "MapSimple",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.MapSimple",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.MapSimple",
-				TypeName:   "MapSimple",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.MapSimple",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.MapSimple",
+				TypeName:    "MapSimple",
 			},
-			Map: &stmodel.Map{
-				Key: &stmodel.Field{
+			Map: &stst.Map{
+				Key: &stst.Field{
 					Name: "any",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "any",
 						TypeName:   "any",
 					},
 				},
-				Value: &stmodel.Field{
+				Value: &stst.Field{
 					Name:             "",
 					IsUntitledStruct: true,
-					Schema: &stmodel.Schema{
-						Fields: []*stmodel.Field{
+					Schema: &stst.Schema{
+						Fields: []*stst.Field{
 							{
 								Name: "a",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "string",
 									TypeName:   "SampleString",
 								},
@@ -64,27 +63,27 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "MapS",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.MapS",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.MapS",
-				TypeName:   "MapS",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.MapS",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.MapS",
+				TypeName:    "MapS",
 			},
-			Map: &stmodel.Map{
-				Key: &stmodel.Field{
+			Map: &stst.Map{
+				Key: &stst.Field{
 					Name:                "",
 					IsUntitledInterface: true,
-					Schema: &stmodel.Schema{
+					Schema: &stst.Schema{
 						Name: "",
-						Fields: []*stmodel.Field{
+						Fields: []*stst.Field{
 							{
 								Name: "AAA",
-								Func: &stmodel.Func{},
+								Func: &stst.Func{},
 							},
 						},
 					},
 				},
-				Value: &stmodel.Field{
+				Value: &stst.Field{
 					Name:             "",
 					IsUntitledStruct: true,
 				},
@@ -92,48 +91,48 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "SamplePrefixMap",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.SamplePrefixMap",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.SamplePrefixMap",
-				TypeName:   "SamplePrefixMap",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.SamplePrefixMap",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.SamplePrefixMap",
+				TypeName:    "SamplePrefixMap",
 			},
-			Map: &stmodel.Map{
-				Key: &stmodel.Field{
+			Map: &stst.Map{
+				Key: &stst.Field{
 					Name: "string",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
 				},
-				Value: &stmodel.Field{
+				Value: &stst.Field{
 					Name: "any",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						TypeName:   "any",
 						Underlying: "any",
 					},
-					TypePrefixes: []stmodel.TypePrefix{
-						"[]", "*", "[]", "[]", "*", "[]",
+					TypePrefixes: []stst.TypePrefix{
+						"[]", "*", "[]", "[]", "*", "[5]",
 					},
 				},
 			},
 		},
 		{
 			Name: "Person",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.Person",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.Person",
-				TypeName:   "Person",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.Person",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.Person",
+				TypeName:    "Person",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "Name",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -148,11 +147,11 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Age",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "int",
 						TypeName:   "int",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -164,11 +163,11 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Sex",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -180,11 +179,11 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Hobby",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -197,11 +196,11 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Good",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.Good",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.Good",
-						TypeName:   "Good",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.Good",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.Good",
+						TypeName:    "Good",
 					},
 					Comment: []string{
 						"// no name // no name",
@@ -211,20 +210,20 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "Animal",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.Animal",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.Animal",
-				TypeName:   "Animal",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.Animal",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.Animal",
+				TypeName:    "Animal",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "ID",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -236,11 +235,11 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Kind",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -252,24 +251,24 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "Goods",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.Good",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.Good",
-						TypeName:   "Good",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.Good",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.Good",
+						TypeName:    "Good",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"[]", "*"},
+					TypePrefixes: []stst.TypePrefix{"[]", "*"},
 				},
 				{
 					Name: "GoodPtr",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.Good",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.Good",
-						TypeName:   "Good",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.Good",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.Good",
+						TypeName:    "Good",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"*"},
-					Tags: []*stmodel.Tag{
+					TypePrefixes: []stst.TypePrefix{"*"},
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -281,13 +280,13 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "GoodStr",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.Good",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.Good",
-						TypeName:   "Good",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.Good",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.Good",
+						TypeName:    "Good",
 					},
-					Tags: []*stmodel.Tag{
+					Tags: []*stst.Tag{
 						{
 							Key: "bigquery",
 							Values: []string{
@@ -307,76 +306,76 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "strPtr",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"*"},
+					TypePrefixes: []stst.TypePrefix{"*"},
 				},
 				{
 					Name: "tim",
-					Type: &stmodel.Type{
-						Underlying: "time.Time",
-						Package:    "time",
-						PkPlusName: "time.Time",
-						TypeName:   "Time",
+					Type: &stst.Type{
+						Underlying:  "time.Time",
+						PkgID:       "time",
+						PkgPlusName: "time.Time",
+						TypeName:    "Time",
 					},
 				},
 				{
 					Name: "timPtr",
-					Type: &stmodel.Type{
-						Underlying: "time.Time",
-						Package:    "time",
-						PkPlusName: "time.Time",
-						TypeName:   "Time",
+					Type: &stst.Type{
+						Underlying:  "time.Time",
+						PkgID:       "time",
+						PkgPlusName: "time.Time",
+						TypeName:    "Time",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"*"},
+					TypePrefixes: []stst.TypePrefix{"*"},
 				},
 				{
 					Name: "strs",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"[]"},
+					TypePrefixes: []stst.TypePrefix{"[]"},
 				},
 				{
 					Name:         "funcs",
-					TypePrefixes: []stmodel.TypePrefix{"[]"},
-					Func: &stmodel.Func{
-						Args: []*stmodel.Field{
+					TypePrefixes: []stst.TypePrefix{"[]"},
+					Func: &stst.Func{
+						Args: []*stst.Field{
 							{
 								Name: "v",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "any",
 									TypeName:   "any",
 								},
 							},
 							{
 								Name:         "ints",
-								TypePrefixes: []stmodel.TypePrefix{"[]"},
-								Type: &stmodel.Type{
+								TypePrefixes: []stst.TypePrefix{"[]"},
+								Type: &stst.Type{
 									Underlying: "int",
 									TypeName:   "int",
 								},
 							},
 							{
 								Name: "ptrInts",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "int",
 									TypeName:   "int",
 								},
-								TypePrefixes: []stmodel.TypePrefix{"*", "[]", "*"},
+								TypePrefixes: []stst.TypePrefix{"*", "[]", "*"},
 							},
 						},
-						Results: []*stmodel.Field{
+						Results: []*stst.Field{
 							{
 								Name: "bool",
-								Type: &stmodel.Type{
-									Underlying: "bool",
-									Package:    "",
-									PkPlusName: "",
-									TypeName:   "bool",
+								Type: &stst.Type{
+									Underlying:  "bool",
+									PkgID:       "",
+									PkgPlusName: "",
+									TypeName:    "bool",
 								},
 							},
 						},
@@ -386,149 +385,149 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "Gene",
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "One",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "T",
 						TypeName:   "T",
 					},
 				},
 			},
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.Gene[T any]",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.Gene[T any]",
-				TypeName:   "Gene",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.Gene[T any]",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.Gene[T any]",
+				TypeName:    "Gene",
 			},
 		},
 		{
 			Name: "Good",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.Good",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.Good",
-				TypeName:   "Good",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.Good",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.Good",
+				TypeName:    "Good",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "Name",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
 				},
 				{
 					Name: "Sample",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "SampleString",
 					},
 				},
 				{
 					Name: "SamplePtr",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "SampleString",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"*"},
+					TypePrefixes: []stst.TypePrefix{"*"},
 				},
 			},
 		},
 		{
 			Name: "withIntf",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.withIntf",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.withIntf",
-				TypeName:   "withIntf",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.withIntf",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.withIntf",
+				TypeName:    "withIntf",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "error",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "error",
 						TypeName:   "error",
 					},
 				},
 				{
 					Name: "str",
-					Type: &stmodel.Type{
+					Type: &stst.Type{
 						Underlying: "string",
 						TypeName:   "string",
 					},
 				},
 				{
 					Name: "Intf",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data/aaa.Intf",
-						Package:    "github.com/maru44/stst/tests/data/aaa",
-						PkPlusName: "aaa.Intf",
-						TypeName:   "Intf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data/aaa.Intf",
+						PkgID:       "github.com/maru44/stst/tests/data/aaa",
+						PkgPlusName: "aaa.Intf",
+						TypeName:    "Intf",
 					},
 				},
 				{
 					Name: "Good",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.Good",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.Good",
-						TypeName:   "Good",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.Good",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.Good",
+						TypeName:    "Good",
 					},
-					TypePrefixes: []stmodel.TypePrefix{"*"},
+					TypePrefixes: []stst.TypePrefix{"*"},
 				},
 				{
 					Name: "intef",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data/aaa.Intf",
-						Package:    "github.com/maru44/stst/tests/data/aaa",
-						PkPlusName: "aaa.Intf",
-						TypeName:   "Intf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data/aaa.Intf",
+						PkgID:       "github.com/maru44/stst/tests/data/aaa",
+						PkgPlusName: "aaa.Intf",
+						TypeName:    "Intf",
 					},
 				},
 				{
 					Name: "IntSample",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data/aaa.IntSample",
-						Package:    "github.com/maru44/stst/tests/data/aaa",
-						PkPlusName: "aaa.IntSample",
-						TypeName:   "IntSample",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data/aaa.IntSample",
+						PkgID:       "github.com/maru44/stst/tests/data/aaa",
+						PkgPlusName: "aaa.IntSample",
+						TypeName:    "IntSample",
 					},
 				},
 				{
 					Name: "intf",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.intf",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.intf",
-						TypeName:   "intf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.intf",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.intf",
+						TypeName:    "intf",
 					},
 				},
 				{
 					Name: "notEmbededIntf",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.intf",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.intf",
-						TypeName:   "intf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.intf",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.intf",
+						TypeName:    "intf",
 					},
 				},
 				{
 					Name: "fn",
-					Func: &stmodel.Func{
-						Args: []*stmodel.Field{
+					Func: &stst.Func{
+						Args: []*stst.Field{
 							{
 								Name: "v",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "any",
 									TypeName:   "any",
 								},
 							},
 						},
-						Results: []*stmodel.Field{
+						Results: []*stst.Field{
 							{
 								Name: "error",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "error",
 									TypeName:   "error",
 								},
@@ -538,17 +537,17 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "ma",
-					Map: &stmodel.Map{
-						Key: &stmodel.Field{
+					Map: &stst.Map{
+						Key: &stst.Field{
 							Name: "string",
-							Type: &stmodel.Type{
+							Type: &stst.Type{
 								Underlying: "string",
 								TypeName:   "string",
 							},
 						},
-						Value: &stmodel.Field{
+						Value: &stst.Field{
 							Name: "any",
-							Type: &stmodel.Type{
+							Type: &stst.Type{
 								Underlying: "any",
 								TypeName:   "any",
 							},
@@ -559,54 +558,54 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "intf",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.intf",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.intf",
-				TypeName:   "intf",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.intf",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.intf",
+				TypeName:    "intf",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "AAA",
-					Func: &stmodel.Func{
-						Args: []*stmodel.Field{
+					Func: &stst.Func{
+						Args: []*stst.Field{
 							{
 								Name: "in",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "string",
 									TypeName:   "string",
 								},
 							},
 							{
 								Name: "good",
-								Type: &stmodel.Type{
-									Underlying: "github.com/maru44/stst/tests/data.Good",
-									Package:    "github.com/maru44/stst/tests/data",
-									PkPlusName: "data.Good",
-									TypeName:   "Good",
+								Type: &stst.Type{
+									Underlying:  "github.com/maru44/stst/tests/data.Good",
+									PkgID:       "github.com/maru44/stst/tests/data",
+									PkgPlusName: "data.Good",
+									TypeName:    "Good",
 								},
 							},
 							{
 								Name: "sample",
-								Type: &stmodel.Type{
-									Underlying: "github.com/maru44/stst/tests/data/aaa.Sample",
-									Package:    "github.com/maru44/stst/tests/data/aaa",
-									PkPlusName: "aaa.Sample",
-									TypeName:   "Sample",
+								Type: &stst.Type{
+									Underlying:  "github.com/maru44/stst/tests/data/aaa.Sample",
+									PkgID:       "github.com/maru44/stst/tests/data/aaa",
+									PkgPlusName: "aaa.Sample",
+									TypeName:    "Sample",
 								},
 							},
 						},
-						Results: []*stmodel.Field{
+						Results: []*stst.Field{
 							{
 								Name: "string",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "string",
 									TypeName:   "string",
 								},
 							},
 							{
 								Name: "error",
-								Type: &stmodel.Type{
+								Type: &stst.Type{
 									Underlying: "error",
 									TypeName:   "error",
 								},
@@ -616,24 +615,24 @@ func TestParse(t *testing.T) {
 				},
 				{
 					Name: "BBB",
-					Func: &stmodel.Func{},
+					Func: &stst.Func{},
 				},
 				{
 					Name: "Intf",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data/aaa.Intf",
-						Package:    "github.com/maru44/stst/tests/data/aaa",
-						PkPlusName: "aaa.Intf",
-						TypeName:   "Intf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data/aaa.Intf",
+						PkgID:       "github.com/maru44/stst/tests/data/aaa",
+						PkgPlusName: "aaa.Intf",
+						TypeName:    "Intf",
 					},
 				},
 				{
 					Name: "childIntf",
-					Type: &stmodel.Type{
-						Underlying: "github.com/maru44/stst/tests/data.childIntf",
-						TypeName:   "childIntf",
-						Package:    "github.com/maru44/stst/tests/data",
-						PkPlusName: "data.childIntf",
+					Type: &stst.Type{
+						Underlying:  "github.com/maru44/stst/tests/data.childIntf",
+						TypeName:    "childIntf",
+						PkgID:       "github.com/maru44/stst/tests/data",
+						PkgPlusName: "data.childIntf",
 					},
 				},
 			},
@@ -641,16 +640,16 @@ func TestParse(t *testing.T) {
 		},
 		{
 			Name: "childIntf",
-			Type: &stmodel.Type{
-				Underlying: "github.com/maru44/stst/tests/data.childIntf",
-				Package:    "github.com/maru44/stst/tests/data",
-				PkPlusName: "data.childIntf",
-				TypeName:   "childIntf",
+			Type: &stst.Type{
+				Underlying:  "github.com/maru44/stst/tests/data.childIntf",
+				PkgID:       "github.com/maru44/stst/tests/data",
+				PkgPlusName: "data.childIntf",
+				TypeName:    "childIntf",
 			},
-			Fields: []*stmodel.Field{
+			Fields: []*stst.Field{
 				{
 					Name: "CCC",
-					Func: &stmodel.Func{},
+					Func: &stst.Func{},
 				},
 			},
 			IsInterface: true,

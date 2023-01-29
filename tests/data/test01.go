@@ -10,7 +10,7 @@ type (
 	MapSimple map[any]struct{ a SampleString }
 	MapS      map[interface{ AAA() }]struct{}
 
-	SamplePrefixMap map[string][]*[][]*[]any
+	SamplePrefixMap map[string][]*[][]*[5]any
 
 	Person struct {
 		Name  string `bigquery:"name"` // comment

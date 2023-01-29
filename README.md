@@ -17,14 +17,13 @@ import (
 
 	"github.com/k0kubun/pp"
 	"github.com/maru44/stst"
-	"github.com/maru44/stst/stmodel"
 	"golang.org/x/tools/go/packages"
 )
 
 func main() {
 	ps, _ := loadPackages("github.com/maru44/stst/tests/data/aaa")
 
-	var schemas []*stmodel.Schema
+	var schemas []*stst.Schema
 	for _, pk := range ps {
 		p := stst.NewParser(pk)
 		s := p.Parse()
@@ -49,18 +48,18 @@ func loadPackages(ps ...string) ([]*packages.Package, error) {
 result:
 
 ```
-[]*stmodel.Schema{
-  &stmodel.Schema{
+[]*stst.Schema{
+  &stst.Schema{
     Name:   "Intf",
-    Fields: []*stmodel.Field{
-      &stmodel.Field{
+    Fields: []*stst.Field{
+      &stst.Field{
         Name:                "Hello",
-        Func:                &stmodel.Func{
-          Args:    []*stmodel.Field{},
-          Results: []*stmodel.Field{
-            &stmodel.Field{
+        Func:                &stst.Func{
+          Args:    []*stst.Field{},
+          Results: []*stst.Field{
+            &stst.Field{
               Name: "string",
-              Type: &stmodel.Type{
+              Type: &stst.Type{
                 Underlying: "string",
                 TypeName:   "string",
               },
@@ -69,39 +68,39 @@ result:
         },
       },
     },
-    Type: &stmodel.Type{
+    Type: &stst.Type{
       Underlying: "github.com/maru44/stst/tests/data/aaa.Intf",
-      Package:    "github.com/maru44/stst/tests/data/aaa",
-      PkPlusName: "aaa.Intf",
+      PkgID:    "github.com/maru44/stst/tests/data/aaa",
+      PkgPlusName: "aaa.Intf",
       TypeName:   "Intf",
     },
     IsInterface:  true,
   },
-  &stmodel.Schema{
+  &stst.Schema{
     Name:   "IntSample",
-    Type:   &stmodel.Type{
+    Type:   &stst.Type{
       Underlying: "int",
       TypeName:   "int",
     },
   },
-  &stmodel.Schema{
+  &stst.Schema{
     Name:   "Sample",
-    Fields: []*stmodel.Field{
-      &stmodel.Field{
+    Fields: []*stst.Field{
+      &stst.Field{
         Name: "Str",
-        Type: &stmodel.Type{
+        Type: &stst.Type{
           Underlying: "string",
           TypeName:   "string",
         },
-        Tags:                []*stmodel.Tag{
-          &stmodel.Tag{
+        Tags:                []*stst.Tag{
+          &stst.Tag{
             Key:    "tag0",
             Values: []string{
               "xxx",
             },
             RawValue: "xxx",
           },
-          &stmodel.Tag{
+          &stst.Tag{
             Key:    "tag1",
             Values: []string{
               "yyy",
@@ -115,22 +114,22 @@ result:
         },
       },
     },
-    Type: &stmodel.Type{
+    Type: &stst.Type{
       Underlying: "github.com/maru44/stst/tests/data/aaa.Sample",
-      Package:    "github.com/maru44/stst/tests/data/aaa",
-      PkPlusName: "aaa.Sample",
+      PkgID:    "github.com/maru44/stst/tests/data/aaa",
+      PkgPlusName: "aaa.Sample",
       TypeName:   "Sample",
     },
   },
-  &stmodel.Schema{
+  &stst.Schema{
     Name:   "prefixes",
-    Type:   &stmodel.Type{
+    Type:   &stst.Type{
       Underlying: "github.com/maru44/stst/tests/data/aaa.prefixes",
-      Package:    "github.com/maru44/stst/tests/data/aaa",
-      PkPlusName: "aaa.prefixes",
+      PkgID:    "github.com/maru44/stst/tests/data/aaa",
+      PkgPlusName: "aaa.prefixes",
       TypeName:   "prefixes",
     },
-    TypePrefixes: []stmodel.TypePrefix{
+    TypePrefixes: []stst.TypePrefix{
       "[]",
       "*",
       "[]",

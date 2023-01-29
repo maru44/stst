@@ -1,10 +1,10 @@
 package stst
 
 import (
+	"fmt"
 	"go/ast"
 	"strings"
 
-	"github.com/maru44/stst/stmodel"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -19,8 +19,8 @@ func NewParser(pkg *packages.Package) *Parser {
 	return out
 }
 
-func (p *Parser) Parse() []*stmodel.Schema {
-	var schemas []*stmodel.Schema
+func (p *Parser) Parse() []*Schema {
+	var schemas []*Schema
 	for _, f := range p.Pkg.Syntax {
 		for _, decl := range f.Decls {
 			if it, ok := decl.(*ast.GenDecl); ok {
@@ -37,8 +37,8 @@ func (p *Parser) Parse() []*stmodel.Schema {
 	return schemas
 }
 
-func (p *Parser) ParseFile(f *ast.File) []*stmodel.Schema {
-	var schemas []*stmodel.Schema
+func (p *Parser) ParseFile(f *ast.File) []*Schema {
+	var schemas []*Schema
 	for _, decl := range f.Decls {
 		if it, ok := decl.(*ast.GenDecl); ok {
 			for _, spec := range it.Specs {
@@ -53,16 +53,16 @@ func (p *Parser) ParseFile(f *ast.File) []*stmodel.Schema {
 	return schemas
 }
 
-func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
-	sc := &stmodel.Schema{
+func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *Schema {
+	sc := &Schema{
 		Name: spec.Name.Name,
 	}
 
 	var fin bool
-	var prefixes []stmodel.TypePrefix
+	var prefixes []TypePrefix
 	ex := spec.Type
 	for !fin {
-		var pref stmodel.TypePrefix
+		var pref TypePrefix
 		ex, pref, fin = p.purgePointerOrSlice(ex)
 		if fin {
 			break
@@ -107,13 +107,13 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *stmodel.Schema {
 	return sc
 }
 
-func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
+func (p *Parser) parseField(f *ast.Field) (*Field, bool) {
 	var name string
 	if len(f.Names) != 0 {
 		name = f.Names[0].Name
 	}
 
-	out := &stmodel.Field{
+	out := &Field{
 		Tags: p.parseTag(f.Tag),
 	}
 
@@ -126,10 +126,10 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 	}
 
 	var fin bool
-	var prefixes []stmodel.TypePrefix
+	var prefixes []TypePrefix
 	ex := f.Type
 	for !fin {
-		var pref stmodel.TypePrefix
+		var pref TypePrefix
 		ex, pref, fin = p.purgePointerOrSlice(ex)
 		if fin {
 			break
@@ -155,9 +155,9 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 		if name == "" {
 			name = typ.Sel.Name
 		}
-		out.Type = &stmodel.Type{
+		out.Type = &Type{
 			TypeName:   typ.Sel.Name,
-			Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
+			Underlying: UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 		}
 	case *ast.FuncType:
 		out.Func = p.parseFunc(typ)
@@ -166,7 +166,7 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 	case *ast.StructType:
 		out.IsUntitledStruct = true
 		if len(typ.Fields.List) > 0 {
-			sc := &stmodel.Schema{}
+			sc := &Schema{}
 			for _, fi := range typ.Fields.List {
 				ff, ok := p.parseField(fi)
 				if !ok {
@@ -180,7 +180,7 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 	case *ast.InterfaceType:
 		out.IsUntitledInterface = true
 		if len(typ.Methods.List) > 0 {
-			sc := &stmodel.Schema{}
+			sc := &Schema{}
 			for _, m := range typ.Methods.List {
 				ff, ok := p.parseField(m)
 				if !ok {
@@ -202,17 +202,22 @@ func (p *Parser) parseField(f *ast.Field) (*stmodel.Field, bool) {
 	return out, true
 }
 
-func (p *Parser) purgePointerOrSlice(ex ast.Expr) (ast.Expr, stmodel.TypePrefix, bool) {
+func (p *Parser) purgePointerOrSlice(ex ast.Expr) (ast.Expr, TypePrefix, bool) {
 	switch typ := ex.(type) {
 	case *ast.StarExpr:
-		return typ.X, stmodel.TypePrefixPtr, false
+		return typ.X, TypePrefixPtr, false
 	case *ast.ArrayType:
-		return typ.Elt, stmodel.TypePrefixSlice, false
+		if typ.Len != nil {
+			if b, ok := typ.Len.(*ast.BasicLit); ok {
+				return typ.Elt, TypePrefix(fmt.Sprintf("[%d]", b.Kind)), false
+			}
+		}
+		return typ.Elt, TypePrefixSlice, false
 	}
 	return ex, "", true
 }
 
-func (p *Parser) parseMap(m *ast.MapType) *stmodel.Map {
+func (p *Parser) parseMap(m *ast.MapType) *Map {
 	key, ok := p.parseField(&ast.Field{
 		Type: m.Key,
 	})
@@ -225,14 +230,14 @@ func (p *Parser) parseMap(m *ast.MapType) *stmodel.Map {
 	if !ok {
 		return nil
 	}
-	return &stmodel.Map{
+	return &Map{
 		Key:   key,
 		Value: value,
 	}
 }
 
-func (p *Parser) parseFunc(fn *ast.FuncType) *stmodel.Func {
-	var args, results []*stmodel.Field
+func (p *Parser) parseFunc(fn *ast.FuncType) *Func {
+	var args, results []*Field
 	if fn.Params != nil {
 		for _, param := range fn.Params.List {
 			ff, ok := p.parseField(param)
@@ -249,17 +254,17 @@ func (p *Parser) parseFunc(fn *ast.FuncType) *stmodel.Func {
 			}
 		}
 	}
-	return &stmodel.Func{
+	return &Func{
 		Args:    args,
 		Results: results,
 	}
 }
 
-func (p *Parser) parseIdent(ide *ast.Ident) *stmodel.Type {
+func (p *Parser) parseIdent(ide *ast.Ident) *Type {
 	if ide.Obj == nil {
-		return &stmodel.Type{
+		return &Type{
 			TypeName:   ide.Name,
-			Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+			Underlying: UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 		}
 	}
 	if ide.Obj.Decl != nil {
@@ -267,30 +272,30 @@ func (p *Parser) parseIdent(ide *ast.Ident) *stmodel.Type {
 			switch typ := spec.Type.(type) {
 			case *ast.Ident:
 				// like stringLike type
-				return &stmodel.Type{
+				return &Type{
 					TypeName:   ide.Name,
-					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
+					Underlying: UnderlyingType(p.Pkg.TypesInfo.TypeOf(typ).String()),
 				}
 			case *ast.StructType:
-				return &stmodel.Type{
+				return &Type{
 					TypeName:   ide.Name,
-					Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+					Underlying: UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 				}
 			}
 		}
 	}
-	return &stmodel.Type{
+	return &Type{
 		TypeName:   ide.Obj.Name,
-		Underlying: stmodel.UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
+		Underlying: UnderlyingType(p.Pkg.TypesInfo.TypeOf(ide).String()),
 	}
 }
 
-func (p *Parser) parseTag(tag *ast.BasicLit) []*stmodel.Tag {
+func (p *Parser) parseTag(tag *ast.BasicLit) []*Tag {
 	if tag == nil {
 		return nil
 	}
 
-	var out []*stmodel.Tag
+	var out []*Tag
 	tags := strings.Split(strings.Trim(tag.Value, "`"), " ")
 	for _, t := range tags {
 		kv := strings.Split(t, ":")
@@ -299,7 +304,7 @@ func (p *Parser) parseTag(tag *ast.BasicLit) []*stmodel.Tag {
 		}
 
 		v := strings.Trim(kv[1], `"`)
-		tag := &stmodel.Tag{
+		tag := &Tag{
 			Key:      kv[0],
 			Values:   strings.Split(v, ","),
 			RawValue: v,
