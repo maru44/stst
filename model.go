@@ -20,6 +20,7 @@ type (
 		Map          *Map
 		IsInterface  bool
 		TypePrefixes []TypePrefix
+		Comment      []string
 	}
 
 	// Func has information of args and results

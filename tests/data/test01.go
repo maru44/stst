@@ -5,12 +5,12 @@ import (
 )
 
 type (
-	SampleString string
+	SampleString string // comment
 
 	MapSimple map[any]struct{ a SampleString }
 	MapS      map[interface{ AAA() }]struct{}
 
-	SamplePrefixMap map[string][]*[][]*[5]any
+	SamplePrefixMap map[string][]*[][]*[5]any // pref comment
 
 	Person struct {
 		Name  string `bigquery:"name"` // comment

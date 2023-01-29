@@ -71,6 +71,13 @@ func (p *Parser) parseTypeSpec(spec *ast.TypeSpec) *Schema {
 	}
 	sc.TypePrefixes = prefixes
 
+	if spec.Comment != nil && len(spec.Comment.List) > 0 {
+		sc.Comment = make([]string, len(spec.Comment.List))
+		for i, c := range spec.Comment.List {
+			sc.Comment[i] = c.Text
+		}
+	}
+
 	switch typ := ex.(type) {
 	case *ast.StructType:
 		sc.Type = p.parseIdent(spec.Name)

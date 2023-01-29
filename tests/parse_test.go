@@ -27,6 +27,7 @@ func TestParse(t *testing.T) {
 				Underlying: "string",
 				TypeName:   "string",
 			},
+			Comment: []string{"// comment"},
 		},
 		{
 			Name: "MapSimple",
@@ -116,6 +117,7 @@ func TestParse(t *testing.T) {
 					},
 				},
 			},
+			Comment: []string{"// pref comment"},
 		},
 		{
 			Name: "Person",
