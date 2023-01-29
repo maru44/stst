@@ -8,10 +8,8 @@ The `stst` is package to get information defined as type in go package by static
 
 ## How to Use
 
-**Install**
-
 ```shell
-go install github.com/maru44/stst@latest
+go get github.com/maru44/stst@latest
 ```
 
 1. Load package
